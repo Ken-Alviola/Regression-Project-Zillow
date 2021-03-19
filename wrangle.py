@@ -53,7 +53,7 @@ def get_zillow_data(cached=True):
     return df
 
 def clean_zillow(df):
-    '''Takes in a df of telco data and cleans the data by replacing blanks and dropping null values. 
+    '''Takes in a df of zillow data and cleans the data by replacing blanks and dropping null values. 
     The total_charges column is then converted to float
     
     return: df, a cleaned pandas dataframe'''
@@ -64,7 +64,7 @@ def clean_zillow(df):
 
 def split_zillow(df, stratify_by=None):
     """
-    Crude train, validate, test split
+    train, validate, test split
     To stratify, send in a column name
     """
     
@@ -79,14 +79,14 @@ def split_zillow(df, stratify_by=None):
 
 def wrangle_zillow(split=False):
     '''
-    wrangle_telco will read in our student grades as a pandas dataframe,
+    wrangle_zillow will read zillow.csv as a pandas dataframe,
     clean the data
     split the data
-    return: train, validate, test sets of pandas dataframes from telco if split = True
+    return: train, validate, test sets of pandas dataframes from zilow if split = True
     '''
-    df = clean_telco(acquire_telco())
+    df = clean_zillow(acquire_zillow())
     if split == True:
-        return split_telco(df)
+        return split_zillow(df)
     else:
         return df
 
