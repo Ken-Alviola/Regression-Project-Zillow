@@ -19,11 +19,23 @@ def new_zillow_data():
     write it to a csv file, and returns the df.
     '''
     # Create SQL query.
-    sql_query = ''' select * 
-                    from properties_2017
-                    join predictions_2017 using(parcelid)
-                    where transactiondate between "2017-05-01" and "2017-08-31"
-                    and unitcnt = 1;
+    sql_query = ''' select parcelid, 
+                        bathroomcnt, 
+                        bedroomcnt,
+                        calculatedfinishedsquarefeet,
+                        fips,
+                        latitude,
+                        longitude,
+                        lotsizesquarefeet,
+                        regionidzip,
+                        yearbuilt,
+                        taxvaluedollarcnt,
+                        taxamount,
+                        transactiondate 
+      from properties_2017
+      join predictions_2017 using(parcelid)
+      where transactiondate between "2017-05-01" and "2017-08-31"
+      AND (unitcnt = 1 OR propertylandusetypeid IN (261, 279, 262, 263, 264, 266, 275));
                     '''
     
     # Read in DataFrame from Codeup db.
@@ -31,7 +43,7 @@ def new_zillow_data():
     
     return df
 
-def get_zillow_data(cached=True):
+def get_zillow_data(cached=False):
     '''
     This function reads in zillow data from Codeup database and writes data to
     a csv file if cached == False or if cached == True reads in telco df from
@@ -48,18 +60,37 @@ def get_zillow_data(cached=True):
     else:
         
         # If csv file exists or cached == True, read in data from csv.
-        df = pd.read_csv('zillow.csv', index_col=0)
+        df = pd.read_csv('zillow.csv', index_col=1)
         
     return df
 
 def clean_zillow(df):
-    '''Takes in a df of zillow data and cleans the data by replacing blanks and dropping null values. 
-    The total_charges column is then converted to float
+    '''Takes in a df of zillow data and cleans the data by dropping null values, renaming columns, creating age column, and dealing with             outliers using 1.5x IQR    
     
     return: df, a cleaned pandas dataframe'''
+    
+    df = df.set_index('parcelid')  
+
     df.replace(r'^\s*$', np.nan, regex=True, inplace=True)
     df = df.dropna()
-    df['total_charges'] = df.total_charges.astype(float)
+    df = df.rename(columns={"bedroomcnt": "bedrooms", "bathroomcnt": "bathrooms", "calculatedfinishedsquarefeet":    
+                                    "square_feet","taxamount": "taxes", "taxvaluedollarcnt": "tax_value"})
+    
+    df['age_in_years'] = 2021 - df.yearbuilt
+    df['Bathrooms'] = df.bathrooms.apply(lambda x: "4+" if x >= 4 else x)
+    df['Bedrooms'] = df.bathrooms.apply(lambda x: "4+" if x >= 4 else x)
+    df['tax_rate'] = round(((df.taxes / df.tax_value) * 100), 2)
+    df = df.drop(columns=['yearbuilt','bathrooms','bedrooms']) 
+    
+    q1 = df.tax_value.quantile(.25)
+    q3 = df.tax_value.quantile(.75)
+    iqr = q3 - q1
+    multiplier = 1.5
+    upper_bound = q3 + (multiplier * iqr)
+    lower_bound = q1 - (multiplier * iqr)
+    df = df[df.tax_value > lower_bound]
+    df = df[df.tax_value < upper_bound]
+    
     return df
 
 def split_zillow(df, stratify_by=None):
@@ -84,7 +115,7 @@ def wrangle_zillow(split=False):
     split the data
     return: train, validate, test sets of pandas dataframes from zilow if split = True
     '''
-    df = clean_zillow(acquire_zillow())
+    df = clean_zillow(get_zillow_data())
     if split == True:
         return split_zillow(df)
     else:
