@@ -59,7 +59,7 @@ def explore_univariate_categorical(train, cat_var):
     a frequency table and barplot of the frequencies. 
     '''
     frequency_table = freq_table(train, cat_var)
-    plt.figure(figsize=(2,2))
+    plt.figure(figsize=(4,4))
     sns.barplot(x=cat_var, y='Count', data=frequency_table, color='lightseagreen')
     plt.title(cat_var)
     plt.show()
@@ -71,7 +71,7 @@ def explore_univariate_quant(train, quant_var):
     descriptive stats table, histogram, and boxplot of the distributions. 
     '''
     descriptive_stats = train[quant_var].describe()
-    plt.figure(figsize=(8,2))
+    plt.figure(figsize=(10,4))
 
     p = plt.subplot(1, 2, 1)
     p = plt.hist(train[quant_var], color='lightseagreen')
@@ -149,7 +149,7 @@ def run_chi2(train, cat_var, target):
     return chi2_summary, observed, expected
 
 def plot_cat_by_target(train, target, cat_var):
-    p = plt.figure(figsize=(2,2))
+    p = plt.figure(figsize=(4,4))
     p = sns.barplot(cat_var, target, data=train, alpha=.8, color='lightseagreen')
     overall_rate = train[target].mean()
     p = plt.axhline(overall_rate, ls='--', color='gray')

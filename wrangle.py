@@ -77,10 +77,10 @@ def clean_zillow(df):
                                     "square_feet","taxamount": "taxes", "taxvaluedollarcnt": "tax_value"})
     
     df['age_in_years'] = 2021 - df.yearbuilt
-    df['Bathrooms'] = df.bathrooms.apply(lambda x: "4+" if x >= 4 else x)
-    df['Bedrooms'] = df.bathrooms.apply(lambda x: "4+" if x >= 4 else x)
+    df['Bathrooms_cat'] = df.bathrooms.apply(lambda x: "4+" if x >= 4 else x)
+    df['Bedrooms_cat'] = df.bathrooms.apply(lambda x: "4+" if x >= 4 else x)
     df['tax_rate'] = round(((df.taxes / df.tax_value) * 100), 2)
-    df = df.drop(columns=['yearbuilt','bathrooms','bedrooms']) 
+    df = df.drop(columns=['yearbuilt']) 
     
     q1 = df.tax_value.quantile(.25)
     q3 = df.tax_value.quantile(.75)
